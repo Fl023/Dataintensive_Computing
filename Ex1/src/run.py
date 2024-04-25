@@ -35,25 +35,25 @@ if __name__ == "__main__":
 
     # running the second job
     output_file = "output.txt"
+    all_words = []
+    my_dict = defaultdict(lambda: "")
     with job2.make_runner() as runner:
         runner.run()
-        all_words = []
-        my_dict = defaultdict(lambda: "")
 
-        with open(output_file, "w") as output:
+        # retrieving output from job2 and storing in dictionary
+        for key, value in job2.parse_output(runner.cat_output()):
+            term, chi = value
+            all_words.append(term)
+            my_dict[key] += " " + term + ":" + str(chi)
 
-            # retrieving output from job2 and storing in dictionary
-            for key, value in job2.parse_output(runner.cat_output()):
-                term, chi = value
-                all_words.append(term)
-                my_dict[key] += " " + term + ":" + str(chi)
+    with open(output_file, "w") as output:
 
-            # writing chi-square values to file "output.txt"
-            for key in my_dict:
-                output.write("<" + key + ">" + my_dict[key] + "\n")
+        # writing chi-square values to file "output.txt"
+        for key in sorted(my_dict.keys()):
+            output.write("<" + key + ">" + my_dict[key] + "\n")
 
-            # writing merged dictionary to file "output.txt"
-            output.write(" ".join(sorted(set(all_words))) + "\n")
+        # writing merged dictionary to file "output.txt"
+        output.write(" ".join(sorted(set(all_words))) + "\n")
 
     job2_runtime = time.time() - (start_time + job1_runtime)  # timing the 2. job
 
